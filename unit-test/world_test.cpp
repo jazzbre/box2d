@@ -58,15 +58,16 @@ DOCTEST_TEST_CASE("begin contact")
 	const float timeStep = 1.f / 60.f;
 	const int32 velocityIterations = 6;
 	const int32 positionIterations = 2;
+	const int32 particleIterations = 3;
 
-	world.Step(timeStep, velocityIterations, positionIterations);
+	world.Step(timeStep, velocityIterations, positionIterations, particleIterations);
 
 	CHECK(world.GetContactList() == nullptr);
 	CHECK(begin_contact == false);
 	
 	bodyB->SetTransform(b2Vec2(1.f, 0.f), 0.f);
 
-	world.Step(timeStep, velocityIterations, positionIterations);
+	world.Step(timeStep, velocityIterations, positionIterations, particleIterations);
 
 	CHECK(world.GetContactList() != nullptr);
 	CHECK(begin_contact == true);

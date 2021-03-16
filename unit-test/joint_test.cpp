@@ -76,8 +76,9 @@ DOCTEST_TEST_CASE("joint reactions")
 	const float invTimeStep = 60.0f;
 	const int32 velocityIterations = 6;
 	const int32 positionIterations = 2;
+	const int32 particleIterations = 3;
 
-	world.Step(timeStep, velocityIterations, positionIterations);
+	world.Step(timeStep, velocityIterations, positionIterations, particleIterations);
 
 	const float tol = 1e-5f;
 	{

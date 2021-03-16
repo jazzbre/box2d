@@ -85,6 +85,7 @@ DOCTEST_TEST_CASE("hello world")
 	float timeStep = 1.0f / 60.0f;
 	int32 velocityIterations = 6;
 	int32 positionIterations = 2;
+	int32 particleIterations = 3;
 
 	b2Vec2 position = body->GetPosition();
 	float angle = body->GetAngle();
@@ -94,7 +95,7 @@ DOCTEST_TEST_CASE("hello world")
 	{
 		// Instruct the world to perform a single step of simulation.
 		// It is generally best to keep the time step and iterations fixed.
-		world.Step(timeStep, velocityIterations, positionIterations);
+		world.Step(timeStep, velocityIterations, positionIterations, particleIterations);
 
 		// Now print the position and angle of the body.
 		position = body->GetPosition();
