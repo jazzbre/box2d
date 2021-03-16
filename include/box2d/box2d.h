@@ -55,4 +55,7 @@
 #include "b2_weld_joint.h"
 #include "b2_wheel_joint.h"
 
+#include "box2d/b2_particle_system.h"
+#include "box2d/b2_particle_group.h"
+
 #endif

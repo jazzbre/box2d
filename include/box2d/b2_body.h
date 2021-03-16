@@ -164,6 +164,7 @@ public:
 
 	/// Get the body transform for the body's origin.
 	/// @return the world transform of the body's origin.
+	const b2Transform& GetPreviousTransform() const;
 	const b2Transform& GetTransform() const;
 
 	/// Get the world body origin position.
@@ -435,6 +436,7 @@ private:
 
 	int32 m_islandIndex;
 
+	b2Transform m_xf0;		// the previous body origin transform
 	b2Transform m_xf;		// the body origin transform
 	b2Sweep m_sweep;		// the swept motion for CCD
 
@@ -471,6 +473,11 @@ private:
 inline b2BodyType b2Body::GetType() const
 {
 	return m_type;
+}
+
+inline const b2Transform& b2Body::GetPreviousTransform() const
+{
+	return m_xf0;
 }
 
 inline const b2Transform& b2Body::GetTransform() const

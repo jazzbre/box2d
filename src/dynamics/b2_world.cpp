@@ -36,6 +36,7 @@
 #include "box2d/b2_pulley_joint.h"
 #include "box2d/b2_time_of_impact.h"
 #include "box2d/b2_timer.h"
+#include "box2d/b2_particle_system.h"
 #include "box2d/b2_world.h"
 
 #include <new>
@@ -47,6 +48,7 @@ b2World::b2World(const b2Vec2& gravity)
 
 	m_bodyList = nullptr;
 	m_jointList = nullptr;
+	m_particleSystemList = nullptr;
 
 	m_bodyCount = 0;
 	m_jointCount = 0;
@@ -89,6 +91,11 @@ b2World::~b2World()
 		}
 
 		b = bNext;
+	}
+
+	while (m_particleSystemList)
+	{
+		DestroyParticleSystem(m_particleSystemList);
 	}
 }
 
@@ -372,6 +379,58 @@ void b2World::DestroyJoint(b2Joint* j)
 	}
 }
 
+b2ParticleSystem* b2World::CreateParticleSystem(const b2ParticleSystemDef* def)
+{
+	b2Assert(IsLocked() == false);
+	if (IsLocked())
+	{
+		return nullptr;
+	}
+
+	void* mem = m_blockAllocator.Allocate(sizeof(b2ParticleSystem));
+	b2ParticleSystem* p = new (mem) b2ParticleSystem(def, this);
+
+	// Add to world doubly linked list.
+	p->m_prev = nullptr;
+	p->m_next = m_particleSystemList;
+	if (m_particleSystemList)
+	{
+		m_particleSystemList->m_prev = p;
+	}
+	m_particleSystemList = p;
+
+	return p;
+}
+
+void b2World::DestroyParticleSystem(b2ParticleSystem* p)
+{
+	b2Assert(m_particleSystemList != nullptr);
+	b2Assert(IsLocked() == false);
+	if (IsLocked())
+	{
+		return;
+	}
+
+	// Remove world particleSystem list.
+	if (p->m_prev)
+	{
+		p->m_prev->m_next = p->m_next;
+	}
+
+	if (p->m_next)
+	{
+		p->m_next->m_prev = p->m_prev;
+	}
+
+	if (p == m_particleSystemList)
+	{
+		m_particleSystemList = p->m_next;
+	}
+
+	p->~b2ParticleSystem();
+	m_blockAllocator.Free(p, sizeof(b2ParticleSystem));
+}
+
 //
 void b2World::SetAllowSleeping(bool flag)
 {
@@ -408,6 +467,8 @@ void b2World::Solve(const b2TimeStep& step)
 	for (b2Body* b = m_bodyList; b; b = b->m_next)
 	{
 		b->m_flags &= ~b2Body::e_islandFlag;
+		// Store previous
+		b->m_xf0 = b->m_xf;
 	}
 	for (b2Contact* c = m_contactManager.m_contactList; c; c = c->m_next)
 	{
@@ -867,6 +928,7 @@ void b2World::SolveTOI(const b2TimeStep& step)
 		subStep.dtRatio = 1.0f;
 		subStep.positionIterations = 20;
 		subStep.velocityIterations = step.velocityIterations;
+		subStep.particleIterations = step.particleIterations;
 		subStep.warmStarting = false;
 		island.SolveTOI(subStep, bA->m_islandIndex, bB->m_islandIndex);
 
@@ -902,7 +964,7 @@ void b2World::SolveTOI(const b2TimeStep& step)
 	}
 }
 
-void b2World::Step(float dt, int32 velocityIterations, int32 positionIterations)
+void b2World::Step(float dt, int32 velocityIterations, int32 positionIterations, int32 particleIterations)
 {
 	b2Timer stepTimer;
 
@@ -919,6 +981,7 @@ void b2World::Step(float dt, int32 velocityIterations, int32 positionIterations)
 	step.dt = dt;
 	step.velocityIterations	= velocityIterations;
 	step.positionIterations = positionIterations;
+	step.particleIterations = particleIterations;
 	if (dt > 0.0f)
 	{
 		step.inv_dt = 1.0f / dt;
@@ -943,6 +1006,10 @@ void b2World::Step(float dt, int32 velocityIterations, int32 positionIterations)
 	if (m_stepComplete && step.dt > 0.0f)
 	{
 		b2Timer timer;
+		for (b2ParticleSystem* p = m_particleSystemList; p; p = p->GetNext())
+		{
+			p->Solve(step); // Particle Simulation
+		}
 		Solve(step);
 		m_profile.solve = timer.GetMilliseconds();
 	}
@@ -1149,6 +1216,14 @@ void b2World::DebugDraw()
 		}
 	}
 
+	if (flags & b2Draw::e_particleBit)
+	{
+		for (b2ParticleSystem* p = m_particleSystemList; p; p = p->GetNext())
+		{
+			p->Draw(m_debugDraw);
+		}
+	}
+
 	if (flags & b2Draw::e_jointBit)
 	{
 		for (b2Joint* j = m_jointList; j; j = j->GetNext())
@@ -1212,6 +1287,29 @@ void b2World::DebugDraw()
 			m_debugDraw->DrawTransform(xf);
 		}
 	}
+}
+
+static float GetSmallestRadius(const b2World* world)
+{
+	float smallestRadius = b2_maxFloat;
+	for (const b2ParticleSystem* system = world->GetParticleSystemList();
+		 system != NULL;
+		 system = system->GetNext())
+	{
+		smallestRadius = b2Min(smallestRadius, system->GetRadius());
+	}
+	return smallestRadius;
+}
+
+int b2World::CalculateReasonableParticleIterations(float timeStep) const
+{
+	if (m_particleSystemList == NULL)
+		return 1;
+
+	// Use the smallest radius, since that represents the worst-case.
+	return b2CalculateParticleIterations(m_gravity.Length(),
+										 GetSmallestRadius(this),
+										 timeStep);
 }
 
 int32 b2World::GetProxyCount() const
