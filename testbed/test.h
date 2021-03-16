@@ -126,6 +126,7 @@ protected:
 	DestructionListener m_destructionListener;
 	int32 m_textLine;
 	b2World* m_world;
+	b2ParticleSystem* m_particleSystem;
 	b2Body* m_bomb;
 	b2MouseJoint* m_mouseJoint;
 	b2Vec2 m_bombSpawnPoint;

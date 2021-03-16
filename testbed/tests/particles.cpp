@@ -83,19 +83,10 @@ public:
 		{
 			b2BodyDef bd;
 			bd.type = b2_dynamicBody;
-			bd.position.Set(3, 15);
-			b2Body* body = m_world->CreateBody(&bd);
-			b2PolygonShape shape;
-			shape.SetAsBox(0.5f, 0.3f);
-			body->CreateFixture(&shape, 0.35f);
-		}
-		{
-			b2BodyDef bd;
-			bd.type = b2_dynamicBody;
-			bd.position.Set(-3, 8);
 			b2Body* body = m_world->CreateBody(&bd);
 			b2CircleShape shape;
-			shape.m_radius = 0.3f;
+			shape.m_p.Set(0, 8);
+			shape.m_radius = 0.5f;
 			body->CreateFixture(&shape, 0.5f);
 		}
 	}

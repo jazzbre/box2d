@@ -63,8 +63,10 @@ void Settings::Save()
 	fprintf(file, "  \"hertz\": %.9g,\n", m_hertz);
 	fprintf(file, "  \"velocityIterations\": %d,\n", m_velocityIterations);
 	fprintf(file, "  \"positionIterations\": %d,\n", m_positionIterations);
+	fprintf(file, "  \"particleIterations\": %d,\n", m_particleIterations);
 	fprintf(file, "  \"drawShapes\": %s,\n", m_drawShapes ? "true" : "false");
 	fprintf(file, "  \"drawJoints\": %s,\n", m_drawJoints ? "true" : "false");
+	fprintf(file, "  \"drawParticleSystems\": %s,\n", m_drawParticleSystems ? "true" : "false");
 	fprintf(file, "  \"drawAABBs\": %s,\n", m_drawAABBs ? "true" : "false");
 	fprintf(file, "  \"drawContactPoints\": %s,\n", m_drawContactPoints ? "true" : "false");
 	fprintf(file, "  \"drawContactNormals\": %s,\n", m_drawContactNormals ? "true" : "false");
@@ -154,6 +156,15 @@ void Settings::Load()
 			if (fieldValue.get_type() == sajson::TYPE_INTEGER)
 			{
 				m_positionIterations = fieldValue.get_integer_value();
+			}
+			continue;
+		}
+
+		if (strncmp(fieldName.data(), "particleIterations", fieldName.length()) == 0)
+		{
+			if (fieldValue.get_type() == sajson::TYPE_INTEGER)
+			{
+				m_particleIterations = fieldValue.get_integer_value();
 			}
 			continue;
 		}

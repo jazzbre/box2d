@@ -52,6 +52,13 @@ set(BOX2D_SOURCE_FILES
 	dynamics/b2_wheel_joint.cpp
 	dynamics/b2_world.cpp
 	dynamics/b2_world_callbacks.cpp
+	particle/b2_free_list.cpp
+	particle/b2_particle.cpp
+	particle/b2_particle_assembly.cpp
+	particle/b2_particle_group.cpp
+	particle/b2_particle_system.cpp
+	particle/b2_tracked_block.cpp
+	particle/b2_voronoi_diagram.cpp
 	rope/b2_rope.cpp)
 
 set(BOX2D_HEADER_FILES
@@ -94,6 +101,7 @@ set(BOX2D_HEADER_FILES
 	../include/box2d/b2_wheel_joint.h
 	../include/box2d/b2_world.h
 	../include/box2d/b2_world_callbacks.h
+	../include/box2d/b2_particle_system.h
 	../include/box2d/box2d.h)
 
 add_library(box2d ${BOX2D_SOURCE_FILES} ${BOX2D_HEADER_FILES})
