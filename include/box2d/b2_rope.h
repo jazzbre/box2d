@@ -119,7 +119,7 @@ public:
 	///
 	void Draw(b2Draw* draw) const;
 
-private:
+//private:
 
 	void SolveStretch_PBD();
 	void SolveStretch_XPBD(float dt);
